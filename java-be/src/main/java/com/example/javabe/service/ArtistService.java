@@ -4,8 +4,6 @@ import com.example.javabe.model.Artist;
 import com.example.javabe.repositories.ArtistRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
