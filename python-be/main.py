@@ -48,20 +48,20 @@ def transaction2_dirty_read():
     try:
         with serviceUncommited.engine.connect() as connection:
             # perform an update to modify the data between the two reads from the java code
-            query = text("UPDATE artists SET name='BobBob' WHERE id = :id")
+            query = text("UPDATE artists SET followers = followers - 2 WHERE id = :id")
             connection.execute(query, {"id": id})
 
             # fetch the modified difficulty level from the database
-            query_modified = text("SELECT name FROM artists WHERE id = :id")
+            query_modified = text("SELECT followers FROM artists WHERE id = :id")
             result = connection.execute(query_modified, {"id": id}).fetchone()
             if result:
-                modified_name = result[0]
+                modified_followers = result[0]
             else:
                 return jsonify({'error': 'No data found for the given id'}), 404
 
             connection.commit()
 
-        return jsonify({'modified_name': modified_name}), 200
+        return jsonify({'modified_followers': modified_followers}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

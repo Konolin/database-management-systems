@@ -21,4 +21,6 @@ public class Artist {
     private Integer id;
 
     private String name;
+
+    private Integer followers;
 }

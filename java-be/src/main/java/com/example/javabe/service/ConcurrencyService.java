@@ -64,7 +64,10 @@ public class ConcurrencyService {
     public String dirtyRead(Integer id) throws InterruptedException, JsonProcessingException {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);
-        String startingName = artist.getName();
+        Integer startingFollowers = artist.getFollowers();
+        Integer modifiedFollowersTransaction1 = startingFollowers - 1;
+        artist.setFollowers(modifiedFollowersTransaction1);
+        artistRepository.save(artist);
 
         // make HTTP request to Python endpoint to perform update
         String pythonUrl = "http://localhost:5000/dirty-read";
@@ -77,20 +80,21 @@ public class ConcurrencyService {
         Thread.sleep(5000);
 
         // extract modified difficulty level from the response
-        String modifiedNameTransaction2;
+        Integer modifiedFollowersTransaction2;
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            modifiedNameTransaction2 = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("modified_name").getAsString();
+            modifiedFollowersTransaction2 = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("modified_followers").getAsInt();
         } else {
             System.out.println("Error: " + responseEntity.getStatusCodeValue());
             return "";
         }
 
-        String finalName = artistRepository.findById(id).orElse(null).getName();
+        Integer finalFollowers = artistRepository.findById(id).orElse(null).getFollowers();
 
-        Map<String, String> map = new HashMap<>();
-        map.put("startingName", startingName);
-        map.put("modifiedNameTransaction2", modifiedNameTransaction2);
-        map.put("finalName", finalName);
+        Map<String, Integer> map = new HashMap<>();
+        map.put("startingFollowers", startingFollowers);
+        map.put("modifiedNameTransaction1", modifiedFollowersTransaction1);
+        map.put("modifiedNameTransaction2", modifiedFollowersTransaction2);
+        map.put("finalFollowers", finalFollowers);
 
         return objectMapper.writeValueAsString(map);
     }
