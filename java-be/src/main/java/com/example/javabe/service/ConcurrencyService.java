@@ -18,6 +18,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -95,6 +96,24 @@ public class ConcurrencyService {
         map.put("modifiedNameTransaction1", modifiedFollowersTransaction1);
         map.put("modifiedNameTransaction2", modifiedFollowersTransaction2);
         map.put("finalFollowers", finalFollowers);
+
+        return objectMapper.writeValueAsString(map);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public String phantomRead() throws JsonProcessingException {
+        // initial read
+        Integer startingRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+
+        String pythonUrl = "http://localhost:5000/phantom-read";
+        restTemplate.postForObject(pythonUrl, null, String.class);
+
+        // second read
+        Integer finalRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("startingRowsCount", startingRowsCount);
+        map.put("finalRowsCount", finalRowsCount);
 
         return objectMapper.writeValueAsString(map);
     }

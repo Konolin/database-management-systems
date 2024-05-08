@@ -24,4 +24,10 @@ public class ConcurrencyController {
         String response = concurrencyService.dirtyRead(id);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/phantom-read")
+    public ResponseEntity<String> phantomRead() throws JsonProcessingException {
+        String response = concurrencyService.phantomRead();
+        return ResponseEntity.ok(response);
+    }
 }

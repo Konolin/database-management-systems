@@ -38,7 +38,7 @@ def dirty_write():
 
 
 @app.route('/dirty-read', methods=['POST'])
-def transaction2_dirty_read():
+def dirty_read():
     data = request.get_json()
     id = data.get('id')
 
@@ -62,6 +62,18 @@ def transaction2_dirty_read():
             connection.commit()
 
         return jsonify({'modified_followers': modified_followers}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/phantom-read', methods=['POST'])
+def phantom_read():
+    try:
+        with serviceCommited.engine.connect() as connection:
+            query = text("INSERT INTO artists (id, name, followers) VALUES (4, 'Hob', 11)")
+            connection.execute(query)
+            connection.commit()
+        return jsonify({'success': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
