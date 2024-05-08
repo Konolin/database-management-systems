@@ -22,16 +22,17 @@ serviceCommited = ServicePythonCommited()
 def dirty_write():
     data = request.get_json()
     id = data.get('id')
+    new_name = "transaction2"
 
     if id is None:
         return jsonify({'error': 'id is required'}), 400
 
     try:
         with serviceUncommited.engine.connect() as connection:
-            query = text("UPDATE artists SET name = 'CCCCC' WHERE id = :id")
+            query = text("UPDATE artists SET name = 'new_name' WHERE id = :id")
             connection.execute(query, {"id": id})
             connection.commit()
-        return jsonify({'success': True}), 200
+        return new_name, 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
