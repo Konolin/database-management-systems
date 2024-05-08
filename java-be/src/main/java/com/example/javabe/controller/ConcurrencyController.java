@@ -14,8 +14,14 @@ public class ConcurrencyController {
     private final ConcurrencyService concurrencyService;
 
     @PostMapping("/dirty-write")
-    public ResponseEntity<String> dirtyWrite(@RequestBody Artist artist) throws InterruptedException, JsonProcessingException {
-        String response = concurrencyService.dirtyWrite(artist);
+    public ResponseEntity<String> dirtyWrite(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
+        String response = concurrencyService.dirtyWrite(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/dirty-read")
+    public ResponseEntity<String> dirtyRead(@RequestParam Integer id) throws InterruptedException {
+        String response = concurrencyService.dirtyRead(id);
         return ResponseEntity.ok(response);
     }
 }
