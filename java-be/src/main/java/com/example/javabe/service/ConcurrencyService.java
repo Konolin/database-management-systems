@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ConcurrencyService {
@@ -28,7 +31,9 @@ public class ConcurrencyService {
     public String dirtyWrite(Integer id) throws InterruptedException, JsonProcessingException {
         // update the artist name
         Artist artist = artistRepository.findById(id).orElse(null);
+        String startingName = artist.getName();
         artist.setName("ZZZZZ");
+        String modifiedNameTransaction1 = artist.getName();
         artistRepository.save(artist);
 
         // delay to let other transaction happen
@@ -43,9 +48,16 @@ public class ConcurrencyService {
 
         HttpEntity<String> entity = new HttpEntity<>(artistJson, headers);
 
-        String response = restTemplate.postForObject(pythonUrl, entity, String.class);
+        String modifiedNameTransaction2 = restTemplate.postForObject(pythonUrl, entity, String.class);
+        String finalName = artistRepository.findById(id).orElse(null).getName();
 
-        return response;
+        Map<String, String> map = new HashMap<>();
+        map.put("startingName", startingName);
+        map.put("modifiedNameTransaction1", modifiedNameTransaction1);
+        map.put("modifiedNameTransaction2", modifiedNameTransaction2);
+        map.put("finalName", finalName);
+
+        return objectMapper.writeValueAsString(map);
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
