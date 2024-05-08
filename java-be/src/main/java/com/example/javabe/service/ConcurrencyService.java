@@ -26,6 +26,7 @@ public class ConcurrencyService {
     private final ArtistRepository artistRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public String dirtyWrite(Integer id) throws InterruptedException, JsonProcessingException {
@@ -41,7 +42,6 @@ public class ConcurrencyService {
 
         // call the Python transaction that updates the starting name of the same user
         String pythonUrl = "http://localhost:5000/dirty-write";
-        ObjectMapper objectMapper = new ObjectMapper();
         String artistJson = objectMapper.writeValueAsString(artist);
 
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -61,13 +61,10 @@ public class ConcurrencyService {
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public String dirtyRead(Integer id) throws InterruptedException {
+    public String dirtyRead(Integer id) throws InterruptedException, JsonProcessingException {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);
-        if (artist == null) {
-            throw new EntityNotFoundException();
-        }
-        String initialName = artist.getName();
+        String startingName = artist.getName();
 
         // make HTTP request to Python endpoint to perform update
         String pythonUrl = "http://localhost:5000/dirty-read";
@@ -80,17 +77,21 @@ public class ConcurrencyService {
         Thread.sleep(5000);
 
         // extract modified difficulty level from the response
-        String modifiedName;
+        String modifiedNameTransaction2;
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            modifiedName = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("modified_name").getAsString();
+            modifiedNameTransaction2 = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("modified_name").getAsString();
         } else {
             System.out.println("Error: " + responseEntity.getStatusCodeValue());
             return "";
         }
 
-        System.out.println("Initial name: " + initialName);
-        System.out.println("Modified name: " + modifiedName);
+        String finalName = artistRepository.findById(id).orElse(null).getName();
 
-        return initialName + " " + modifiedName;
+        Map<String, String> map = new HashMap<>();
+        map.put("startingName", startingName);
+        map.put("modifiedNameTransaction2", modifiedNameTransaction2);
+        map.put("finalName", finalName);
+
+        return objectMapper.writeValueAsString(map);
     }
 }

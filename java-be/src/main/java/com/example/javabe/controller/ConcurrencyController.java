@@ -20,7 +20,7 @@ public class ConcurrencyController {
     }
 
     @PostMapping("/dirty-read")
-    public ResponseEntity<String> dirtyRead(@RequestParam Integer id) throws InterruptedException {
+    public ResponseEntity<String> dirtyRead(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
         String response = concurrencyService.dirtyRead(id);
         return ResponseEntity.ok(response);
     }
