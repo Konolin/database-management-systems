@@ -36,4 +36,10 @@ public class ConcurrencyController {
         String response = concurrencyService.lostUpdate(id);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/unrepeatable-reads")
+    public ResponseEntity<String> unrepeatableReads(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
+        String response = concurrencyService.unrepeatableReads(id);
+        return ResponseEntity.ok(response);
+    }
 }
