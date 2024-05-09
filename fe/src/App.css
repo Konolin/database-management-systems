@@ -29,6 +29,7 @@
     height: 10rem;
     width: 40rem;
     resize: none;
+    /*border: none;*/
 }
 
 .output {

@@ -18,7 +18,11 @@ export default function App() {
 
     const handleDirtyWrite = () => {
         setExplanationText(DIRTY_WRITE_EXPLANATION);
-        setOutputText("2");
+        fetch("http://localhost:8080/api/concurrency-issues-java/dirty-write?id=1", {
+            method: 'POST'
+        })
+            .then((response) => response.json())
+            .then(data => setOutputText(data));
     }
 
     const handleLostUpdate = () => {

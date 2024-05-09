@@ -5,7 +5,6 @@ import com.example.javabe.repositories.ArtistRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,12 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,7 +25,7 @@ public class ConcurrencyService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public String dirtyWrite(Integer id) throws InterruptedException, JsonProcessingException {
         // update the artist name
