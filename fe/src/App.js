@@ -22,7 +22,12 @@ export default function App() {
             method: 'POST'
         })
             .then((response) => response.json())
-            .then(data => setOutputText(data));
+            .then(data => {
+                const {startingName, modifiedNameTransaction2, finalName} = data;
+                const text =
+                    `The starting name: ${startingName}\nThe name after transaction 1: ${modifiedNameTransaction2}\nThe name after transaction 2: ${modifiedNameTransaction2}\nThe final name: ${finalName}`;
+                setOutputText(text);
+            });
     }
 
     const handleLostUpdate = () => {
