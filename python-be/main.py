@@ -78,5 +78,34 @@ def phantom_read():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/lost-update', methods=['POST'])
+def lost_update():
+    data = request.get_json()
+    id = data.get('id')
+
+    if id is None:
+        return jsonify({'error': 'id is required'}), 400
+
+    try:
+        with serviceUncommited.engine.connect() as connection:
+            # perform an update to modify the data between the two reads from the java code
+            query = text("UPDATE artists SET followers = followers - 5 WHERE id = :id")
+            connection.execute(query, {"id": id})
+
+            # fetch the modified followers count from the database
+            query_modified = text("SELECT followers FROM artists WHERE id = :id")
+            result = connection.execute(query_modified, {"id": id}).fetchone()
+            if result:
+                modified_followers = result[0]
+            else:
+                return jsonify({'error': 'No data found for the given id'}), 404
+
+            connection.commit()
+
+        return jsonify({'modified_followers': modified_followers}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -114,6 +115,45 @@ public class ConcurrencyService {
         Map<String, Integer> map = new HashMap<>();
         map.put("startingRowsCount", startingRowsCount);
         map.put("finalRowsCount", finalRowsCount);
+
+        return objectMapper.writeValueAsString(map);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public String lostUpdate(Integer id) throws InterruptedException, JsonProcessingException {
+        // initial read
+        Artist artist = artistRepository.findById(id).orElse(null);
+        Integer startingFollowers = artist.getFollowers();
+        Integer modifiedFollowersTransaction1 = startingFollowers - 1;
+        artist.setFollowers(modifiedFollowersTransaction1);
+        artistRepository.save(artist);
+
+        // make HTTP request to Python endpoint to perform update
+        String pythonUrl = "http://localhost:5000/lost-update";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> requestEntity = new HttpEntity<>("{\"id\": " + id + "}", headers);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(pythonUrl, requestEntity, String.class);
+
+        // sleep 5 seconds to allow the Python code to modify the data
+        Thread.sleep(5000);
+
+        // extract modified difficulty level from the response
+        Integer modifiedFollowersTransaction2;
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            modifiedFollowersTransaction2 = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("modified_followers").getAsInt();
+        } else {
+            System.out.println("Error: " + responseEntity.getStatusCodeValue());
+            return "";
+        }
+
+        Integer finalFollowers = artistRepository.findById(id).orElse(null).getFollowers();
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("startingFollowers", startingFollowers);
+        map.put("modifiedFollowersTransaction1", modifiedFollowersTransaction1);
+        map.put("modifiedFollowersTransaction2", modifiedFollowersTransaction2);
+        map.put("finalFollowers", finalFollowers);
 
         return objectMapper.writeValueAsString(map);
     }

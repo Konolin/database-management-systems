@@ -30,4 +30,10 @@ public class ConcurrencyController {
         String response = concurrencyService.phantomRead();
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/lost-update")
+    public ResponseEntity<String> lostUpdate(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
+        String response = concurrencyService.lostUpdate(id);
+        return ResponseEntity.ok(response);
+    }
 }
