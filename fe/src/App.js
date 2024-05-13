@@ -41,7 +41,16 @@ export default function App() {
 
     const handleLostUpdate = () => {
         setExplanationText(LOST_UPDATE_EXPLANATION);
-        setOutputText("3");
+        fetch("http://localhost:8080/api/concurrency-issues-java/lost-update?id=1", {
+            method: 'POST'
+        })
+            .then((response) => response.json())
+            .then(data => {
+                const {startingFollowers, modifiedFollowersTransaction1, modifiedFollowersTransaction2, finalFollowers} = data;
+                const text =
+                    `The starting name: ${startingFollowers}\nThe name after transaction 1: ${modifiedFollowersTransaction1}\nThe name after transaction 2: ${modifiedFollowersTransaction2}\nThe final name: ${finalFollowers}`;
+                setOutputText(text);
+            });
     }
 
     const handlePhantomRead = () => {
@@ -61,7 +70,7 @@ export default function App() {
 
     const handleUnrepeatableRead = () => {
         setExplanationText(UNREPEATABLE_READ_EXPLANATION);
-        setOutputText("5");
+
     }
 
     return (

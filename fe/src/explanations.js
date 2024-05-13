@@ -25,7 +25,15 @@ const PHANTOM_READ_EXPLANATION =
     "Query X returns 3 rows\n";
 
 const UNREPEATABLE_READ_EXPLANATION = "temp - unrepeatable read explanation";
-const LOST_UPDATE_EXPLANATION = "temp - lost update explanation";
+
+const LOST_UPDATE_EXPLANATION =
+    "Lost update explanation\n\n" +
+    "Transaction 1          Transaction 2\n" +
+    "Update X -> Y\n" +
+    "                                Update Y -> Z\n" +
+    "                                Commit Z\n" +
+    "Commit Y\n\n" +
+    "                Final value Y\n";
 
 export {
     DIRTY_WRITE_EXPLANATION,
