@@ -23,9 +23,9 @@ export default function App() {
         })
             .then((response) => response.json())
             .then(data => {
-                const {startingName, modifiedNameTransaction2, finalName} = data;
+                const {startingName, modifiedNameTransaction1, modifiedNameTransaction2, finalName} = data;
                 const text =
-                    `The starting name: ${startingName}\nThe name after transaction 1: ${modifiedNameTransaction2}\nThe name after transaction 2: ${modifiedNameTransaction2}\nThe final name: ${finalName}`;
+                    `The starting name: ${startingName}\nThe name after transaction 1: ${modifiedNameTransaction1}\nThe name after transaction 2: ${modifiedNameTransaction2}\nThe final name: ${finalName}`;
                 setOutputText(text);
             });
     }
