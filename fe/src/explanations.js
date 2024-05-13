@@ -1,6 +1,8 @@
 const DIRTY_WRITE_EXPLANATION =
     "Dirty write explanation\n\n" +
     "Transaction 1          Transaction 2\n" +
+    "Read X/n" +
+    "                                Read X\n" +
     "Update X -> Y\n" +
     "                                Update X -> Z\n" +
     "                                Commit Z\n" +
@@ -29,7 +31,9 @@ const UNREPEATABLE_READ_EXPLANATION = "temp - unrepeatable read explanation";
 const LOST_UPDATE_EXPLANATION =
     "Lost update explanation\n\n" +
     "Transaction 1          Transaction 2\n" +
+    "Read X\n" +
     "Update X -> Y\n" +
+    "                                Read Y\n" +
     "                                Update Y -> Z\n" +
     "                                Commit Z\n" +
     "Commit Y\n\n" +
