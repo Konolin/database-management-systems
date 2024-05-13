@@ -26,7 +26,14 @@ const PHANTOM_READ_EXPLANATION =
     "                                   Insert row\n" +
     "Query X returns 3 rows\n";
 
-const UNREPEATABLE_READ_EXPLANATION = "temp - unrepeatable read explanation";
+const UNREPEATABLE_READ_EXPLANATION =
+    "Unrepeatable read explanation\n" +
+    "Transaction 1          Transaction 2\n" +
+    "Read X\n" +
+    "                                   Read X\n" +
+    "                                   Update X -> Y\n" +
+    "                                   Commit Y\n" +
+    "Read Y (wanted to reread X)";
 
 const LOST_UPDATE_EXPLANATION =
     "Lost update explanation\n\n" +

@@ -166,7 +166,7 @@ public class ConcurrencyService {
         return objectMapper.writeValueAsString(map);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public String unrepeatableReads(Integer id) throws InterruptedException, JsonProcessingException {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);

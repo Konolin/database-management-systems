@@ -70,7 +70,17 @@ export default function App() {
 
     const handleUnrepeatableRead = () => {
         setExplanationText(UNREPEATABLE_READ_EXPLANATION);
-
+        fetch("http://localhost:8080/api/concurrency-issues-java/unrepeatable-reads?id=1", {
+            method: 'POST'
+        })
+            .then((response) => response.json())
+            .then(data => {
+                console.log(data);
+                const {startingFollowers, modifiedFollowers, finalFollowers} = data;
+                const text =
+                    `First read followers: ${startingFollowers}\nModified followers transaction 2: ${modifiedFollowers}\nSecond read Followers: ${modifiedFollowers}`;
+                setOutputText(text);
+            });
     }
 
     return (
