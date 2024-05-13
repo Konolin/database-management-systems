@@ -107,18 +107,22 @@ public class ConcurrencyService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public String phantomRead() throws JsonProcessingException {
+        artistRepository.deleteById(4);
+
         // initial read
-        Integer startingRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+        Integer firstRowCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
 
         String pythonUrl = "http://localhost:5000/phantom-read";
         restTemplate.postForObject(pythonUrl, null, String.class);
 
         // second read
-        Integer finalRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+        Integer secondRowCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
 
         Map<String, Integer> map = new HashMap<>();
-        map.put("startingRowsCount", startingRowsCount);
-        map.put("finalRowsCount", finalRowsCount);
+        map.put("firstRowCount", firstRowCount);
+        map.put("secondRowCount", secondRowCount);
+
+        artistRepository.deleteById(4);
 
         return objectMapper.writeValueAsString(map);
     }

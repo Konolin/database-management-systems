@@ -46,7 +46,17 @@ export default function App() {
 
     const handlePhantomRead = () => {
         setExplanationText(PHANTOM_READ_EXPLANATION);
-        setOutputText("4");
+        fetch("http://localhost:8080/api/concurrency-issues-java/phantom-read", {
+            method: 'POST'
+        })
+            .then((response) => response.json())
+            .then(data => {
+                console.log(data);
+                const {firstRowCount, secondRowCount} = data;
+                const text =
+                    `First row count: ${firstRowCount}\nSecond row count: ${secondRowCount}`;
+                setOutputText(text);
+            });
     }
 
     const handleUnrepeatableRead = () => {

@@ -17,7 +17,13 @@ const DIRTY_READ_EXPLANATION =
     "Rollback\n" +
     "                Final value X = 10\n";
 
-const PHANTOM_READ_EXPLANATION = "temp - phantom read explanation";
+const PHANTOM_READ_EXPLANATION =
+    "Phantom read explanation\n" +
+    "Transaction 1             Transaction 2\n" +
+    "Query X returns 2 rows\n" +
+    "                                   Insert row\n" +
+    "Query X returns 3 rows\n";
+
 const UNREPEATABLE_READ_EXPLANATION = "temp - unrepeatable read explanation";
 const LOST_UPDATE_EXPLANATION = "temp - lost update explanation";
 
