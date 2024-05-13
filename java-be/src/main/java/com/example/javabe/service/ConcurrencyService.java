@@ -5,6 +5,8 @@ import com.example.javabe.repositories.ArtistRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +27,7 @@ public class ConcurrencyService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final HttpHeaders headers = new HttpHeaders();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public String dirtyWrite(Integer id) throws InterruptedException, JsonProcessingException {
         // update the artist name
@@ -63,7 +65,7 @@ public class ConcurrencyService {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);
         Integer startingFollowers = artist.getFollowers();
-        Integer modifiedFollowersTransaction1 = startingFollowers - 1;
+        Integer modifiedFollowersTransaction1 = 99;
         artist.setFollowers(modifiedFollowersTransaction1);
         artistRepository.save(artist);
 
@@ -86,12 +88,18 @@ public class ConcurrencyService {
             return "";
         }
 
+        artist = artistRepository.findById(id).orElse(null);
+        Integer rollbackTransaction1 = startingFollowers;
+        artist.setFollowers(rollbackTransaction1);
+        artistRepository.save(artist);
+
         Integer finalFollowers = artistRepository.findById(id).orElse(null).getFollowers();
 
         Map<String, Integer> map = new HashMap<>();
         map.put("startingFollowers", startingFollowers);
-        map.put("modifiedNameTransaction1", modifiedFollowersTransaction1);
-        map.put("modifiedNameTransaction2", modifiedFollowersTransaction2);
+        map.put("modifiedFollowersTransaction1", modifiedFollowersTransaction1);
+        map.put("modifiedFollowersTransaction2", modifiedFollowersTransaction2);
+        map.put("rollbackTransaction1", rollbackTransaction1);
         map.put("finalFollowers", finalFollowers);
 
         return objectMapper.writeValueAsString(map);

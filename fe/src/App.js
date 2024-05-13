@@ -13,7 +13,16 @@ export default function App() {
 
     const handleDirtyRead = () => {
         setExplanationText(DIRTY_READ_EXPLANATION);
-        setOutputText("1");
+        fetch("http://localhost:8080/api/concurrency-issues-java/dirty-read?id=1", {
+            method: 'POST'
+        })
+            .then((response) => response.json())
+            .then(data => {
+                const {startingFollowers, modifiedFollowersTransaction1, modifiedFollowersTransaction2, rollbackTransaction1, finalFollowers} = data;
+                const text =
+                    `The starting name: ${startingFollowers}\nThe name after transaction 1: ${modifiedFollowersTransaction1}\nThe name after transaction 2: ${modifiedFollowersTransaction2}\nRollback transaction 1: ${rollbackTransaction1}\nThe final name: ${finalFollowers}`;
+                setOutputText(text);
+            });
     }
 
     const handleDirtyWrite = () => {

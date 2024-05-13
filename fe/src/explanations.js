@@ -7,7 +7,16 @@ const DIRTY_WRITE_EXPLANATION =
     "Commit Y\n\n" +
     "                Final value Y\n";
 
-const DIRTY_READ_EXPLANATION = "temp - dirty read explanation";
+const DIRTY_READ_EXPLANATION =
+    "Dirty read explanation\n\n" +
+    "Transaction 1             Transaction 2\n" +
+    "Read X = 10\n" +
+    "Update X = 11\n" +
+    "                                   If X = 11 : Update X = 9\n" +
+    "                                   Commit X\n" +
+    "Rollback\n" +
+    "                Final value X = 10\n";
+
 const PHANTOM_READ_EXPLANATION = "temp - phantom read explanation";
 const UNREPEATABLE_READ_EXPLANATION = "temp - unrepeatable read explanation";
 const LOST_UPDATE_EXPLANATION = "temp - lost update explanation";
