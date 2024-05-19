@@ -116,7 +116,7 @@ def unrepeatable_read():
         return jsonify({'error': 'id is required'}), 400
 
     try:
-        with serviceCommited.engine.connect() as connection:
+        with serviceUncommited.engine.connect() as connection:
             # perform an update to modify the data between the two reads from the java code
             query = text("UPDATE artists SET followers = 999 WHERE id = :id")
             connection.execute(query, {"id": id})

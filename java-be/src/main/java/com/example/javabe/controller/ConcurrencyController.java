@@ -13,30 +13,35 @@ import org.springframework.web.bind.annotation.*;
 public class ConcurrencyController {
     private final ConcurrencyService concurrencyService;
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/dirty-write")
     public ResponseEntity<String> dirtyWrite(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
         String response = concurrencyService.dirtyWrite(id);
         return ResponseEntity.ok(response);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/dirty-read")
     public ResponseEntity<String> dirtyRead(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
         String response = concurrencyService.dirtyRead(id);
         return ResponseEntity.ok(response);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/phantom-read")
     public ResponseEntity<String> phantomRead() throws JsonProcessingException {
         String response = concurrencyService.phantomRead();
         return ResponseEntity.ok(response);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/lost-update")
     public ResponseEntity<String> lostUpdate(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
         String response = concurrencyService.lostUpdate(id);
         return ResponseEntity.ok(response);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/unrepeatable-reads")
     public ResponseEntity<String> unrepeatableReads(@RequestParam Integer id) throws InterruptedException, JsonProcessingException {
         String response = concurrencyService.unrepeatableReads(id);

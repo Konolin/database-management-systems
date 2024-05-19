@@ -5,7 +5,8 @@ import com.example.javabe.repositories.ArtistRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,12 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -67,7 +65,7 @@ public class ConcurrencyService {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);
         Integer startingFollowers = artist.getFollowers();
-        Integer modifiedFollowersTransaction1 = startingFollowers - 1;
+        Integer modifiedFollowersTransaction1 = 99;
         artist.setFollowers(modifiedFollowersTransaction1);
         artistRepository.save(artist);
 
@@ -90,12 +88,18 @@ public class ConcurrencyService {
             return "";
         }
 
+        artist = artistRepository.findById(id).orElse(null);
+        Integer rollbackTransaction1 = startingFollowers;
+        artist.setFollowers(rollbackTransaction1);
+        artistRepository.save(artist);
+
         Integer finalFollowers = artistRepository.findById(id).orElse(null).getFollowers();
 
         Map<String, Integer> map = new HashMap<>();
         map.put("startingFollowers", startingFollowers);
-        map.put("modifiedNameTransaction1", modifiedFollowersTransaction1);
-        map.put("modifiedNameTransaction2", modifiedFollowersTransaction2);
+        map.put("modifiedFollowersTransaction1", modifiedFollowersTransaction1);
+        map.put("modifiedFollowersTransaction2", modifiedFollowersTransaction2);
+        map.put("rollbackTransaction1", rollbackTransaction1);
         map.put("finalFollowers", finalFollowers);
 
         return objectMapper.writeValueAsString(map);
@@ -103,18 +107,22 @@ public class ConcurrencyService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public String phantomRead() throws JsonProcessingException {
+        artistRepository.deleteById(4);
+
         // initial read
-        Integer startingRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+        Integer firstRowCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
 
         String pythonUrl = "http://localhost:5000/phantom-read";
         restTemplate.postForObject(pythonUrl, null, String.class);
 
         // second read
-        Integer finalRowsCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
+        Integer secondRowCount = artistRepository.findArtistByFollowersGreaterThan(10).size();
 
         Map<String, Integer> map = new HashMap<>();
-        map.put("startingRowsCount", startingRowsCount);
-        map.put("finalRowsCount", finalRowsCount);
+        map.put("firstRowCount", firstRowCount);
+        map.put("secondRowCount", secondRowCount);
+
+        artistRepository.deleteById(4);
 
         return objectMapper.writeValueAsString(map);
     }
@@ -158,7 +166,7 @@ public class ConcurrencyService {
         return objectMapper.writeValueAsString(map);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public String unrepeatableReads(Integer id) throws InterruptedException, JsonProcessingException {
         // initial read
         Artist artist = artistRepository.findById(id).orElse(null);
